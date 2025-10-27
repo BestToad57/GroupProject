@@ -1,0 +1,122 @@
+@model GroupProject.Code.Models.Episode
+@{
+    ViewData["Title"] = "Edit Episode";
+    var podcasts = ViewBag.Podcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Episode
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <input type="hidden" asp-for="EpisodeID" />
+                        <input type="hidden" asp-for="playCount" />
+                        <input type="hidden" asp-for="NumberOfViews" />
+                        <input type="hidden" asp-for="AudioFileURL" />
+                        
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <label asp-for="Title" class="form-label fw-semibold">
+                                    <i class="fas fa-microphone me-1"></i>Episode Title *
+                                </label>
+                                <input asp-for="Title" class="form-control form-control-lg" required />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="PodcastID" class="form-label fw-semibold">
+                                    <i class="fas fa-podcast me-1"></i>Podcast *
+                                </label>
+                                <select asp-for="PodcastID" class="form-select" required>
+                                    @if (podcasts != null)
+                                    {
+                                        @foreach (var podcast in podcasts)
+                                        {
+                                            <option value="@podcast.PodcastID">@podcast.Title</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="PodcastID" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ReleaseDate" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-1"></i>Release Date *
+                                </label>
+                                <input asp-for="ReleaseDate" type="datetime-local" class="form-control" required />
+                                <span asp-validation-for="ReleaseDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Duration" class="form-label fw-semibold">
+                                    <i class="fas fa-clock me-1"></i>Duration *
+                                </label>
+                                <input asp-for="Duration" type="text" class="form-control" placeholder="HH:MM:SS" required />
+                                <span asp-validation-for="Duration" class="text-danger small"></span>
+                                <div class="form-text">Format: HH:MM:SS (e.g., 00:45:30 for 45 minutes 30 seconds)</div>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-music me-1"></i>Current Audio File
+                                </label>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-link me-2"></i>
+                                    <small>@Model.AudioFileURL</small>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label for="audioFile" class="form-label fw-semibold">
+                                    <i class="fas fa-upload me-1"></i>Update Audio File (Optional)
+                                </label>
+                                <input type="file" name="audioFile" class="form-control" accept="audio/*" />
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Leave empty to keep existing audio file. Upload a new file to replace it.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-light border-0 mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-semibold mb-2">
+                                            <i class="fas fa-chart-bar text-warning me-1"></i>Episode Statistics
+                                        </h6>
+                                        <ul class="small text-muted mb-0">
+                                            <li><strong>Views:</strong> @Model.NumberOfViews.ToString("N0")</li>
+                                            <li><strong>Play Count:</strong> @Model.playCount.ToString("N0")</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save me-2"></i>Update Episode
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

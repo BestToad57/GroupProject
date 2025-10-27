@@ -1,0 +1,230 @@
+@model GroupProject.Code.Models.Episode
+@{
+    ViewData["Title"] = "Create New Episode";
+    var podcasts = ViewBag.Podcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+    var currentUserEmail = User.Identity?.Name;
+    
+    // Filter podcasts: Admins see all, Podcasters see only their own
+    var availablePodcasts = User.IsInRole("Admin") 
+        ? podcasts 
+        : podcasts?.Where(p => p.CreatorID == currentUserEmail);
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h2 class="text-white mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Episode
+                    </h2>
+                </div>
+                <div class="card-body">
+                    @if (availablePodcasts == null || !availablePodcasts.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>No Podcasts Available</strong>
+                            <p class="mb-0">You need to create a podcast first before adding episodes.</p>
+                            <a asp-controller="Podcast" asp-action="Create" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus me-1"></i>Create Podcast
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-action="Create" method="post" enctype="multipart/form-data" id="episodeForm">
+                            @Html.AntiForgeryToken()
+                            
+                            <!-- Podcast Selection -->
+                            <div class="mb-4">
+                                <label asp-for="PodcastID" class="form-label text-light">
+                                    <i class="fas fa-podcast me-1"></i>Select Podcast
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="PodcastID" class="form-select" required>
+                                    <option value="">-- Choose a podcast --</option>
+                                    @foreach (var podcast in availablePodcasts)
+                                    {
+                                        <option value="@podcast.PodcastID">
+                                            @podcast.Title
+                                            @if (User.IsInRole("Admin") && podcast.CreatorID != currentUserEmail)
+                                            {
+                                                <text>(by @podcast.CreatorID)</text>
+                                            }
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="PodcastID" class="text-danger"></span>
+                            </div>
+
+                            <!-- Episode Title -->
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label text-light">
+                                    <i class="fas fa-heading me-1"></i>Episode Title
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Title" class="form-control" 
+                                       placeholder="Enter episode title" required />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+
+                            <!-- Audio File Upload -->
+                            <div class="mb-4">
+                                <label for="audioFile" class="form-label text-light">
+                                    <i class="fas fa-file-audio me-1"></i>Audio File (MP3)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" class="form-control" id="audioFile" name="audioFile" 
+                                       accept=".mp3,audio/mpeg" required />
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Upload MP3 file. File will be stored in AWS S3.
+                                </div>
+                                <div id="uploadProgress" class="mt-2" style="display: none;">
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                             role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted">Uploading file...</small>
+                                </div>
+                            </div>
+
+                            <!-- Hidden field for AudioFileURL (set after upload) -->
+                            <input type="hidden" asp-for="AudioFileURL" id="audioFileURL" />
+                            
+                            <!-- Hidden fields for auto-generated values -->
+                            <input type="hidden" asp-for="NumberOfViews" value="0" />
+                            <input type="hidden" asp-for="playCount" value="0" />
+
+                            <!-- Release Date -->
+                            <div class="mb-3">
+                                <label asp-for="ReleaseDate" class="form-label text-light">
+                                    <i class="fas fa-calendar me-1"></i>Release Date
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ReleaseDate" type="datetime-local" class="form-control" 
+                                       value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
+                                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="mb-3">
+                                <label class="form-label text-light">
+                                    <i class="fas fa-clock me-1"></i>Duration
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="number" id="hours" class="form-control" 
+                                               placeholder="Hours" min="0" max="23" value="0" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" id="minutes" class="form-control" 
+                                               placeholder="Minutes" min="0" max="59" value="30" required />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" id="seconds" class="form-control" 
+                                               placeholder="Seconds" min="0" max="59" value="0" />
+                                    </div>
+                                </div>
+                                <input type="hidden" asp-for="Duration" id="durationHidden" />
+                                <span asp-validation-for="Duration" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-save me-1"></i>Create Episode
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="card mt-4" style="background-color: rgba(220, 53, 69, 0.1); border-color: var(--primary-red);">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: var(--primary-red);">
+                        <i class="fas fa-lightbulb me-2"></i>Episode Creation Tips
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Choose the podcast this episode belongs to</li>
+                        <li>Upload an MP3 audio file (will be stored in AWS S3)</li>
+                        <li>Set an accurate duration for better user experience</li>
+                        <li>Release date can be in the future for scheduled releases</li>
+                        <li>View count and play count will start at 0 and increment automatically</li>
+                        <li>Users can comment on episodes after release</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Calculate duration from hours, minutes, seconds
+        function updateDuration() {
+            const hours = parseInt(document.getElementById('hours').value) || 0;
+            const minutes = parseInt(document.getElementById('minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('seconds').value) || 0;
+            
+            // Format as TimeSpan string (HH:mm:ss)
+            const durationString = 
+                hours.toString().padStart(2, '0') + ':' +
+                minutes.toString().padStart(2, '0') + ':' +
+                seconds.toString().padStart(2, '0');
+            
+            document.getElementById('durationHidden').value = durationString;
+        }
+
+        // Update duration when inputs change
+        document.getElementById('hours').addEventListener('input', updateDuration);
+        document.getElementById('minutes').addEventListener('input', updateDuration);
+        document.getElementById('seconds').addEventListener('input', updateDuration);
+        
+        // Set initial duration
+        updateDuration();
+
+        // Form submission with file upload
+        document.getElementById('episodeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('audioFile');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressDiv = document.getElementById('uploadProgress');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select an audio file to upload');
+                return;
+            }
+            
+            // Show progress
+            submitBtn.disabled = true;
+            progressDiv.style.display = 'block';
+            
+            // In a real implementation, you would:
+            // 1. Upload file to S3 using AJAX
+            // 2. Get the S3 URL
+            // 3. Set it in the hidden field
+            // 4. Submit the form
+            
+            // For now, we'll simulate this and let the backend handle it
+            // Set a placeholder URL (backend will replace with actual S3 URL)
+            const fileName = fileInput.files[0].name;
+            document.getElementById('audioFileURL').value = 'pending-upload:' + fileName;
+            
+            // Update duration one more time before submit
+            updateDuration();
+            
+            // Submit the form
+            this.submit();
+        });
+    </script>
+}

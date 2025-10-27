@@ -1,0 +1,159 @@
+@model IEnumerable<GroupProject.Code.Models.Podcast>
+@{
+    ViewData["Title"] = User.IsInRole("Admin") ? "All Podcasts" : "My Podcasts";
+    var isAdmin = ViewBag.IsAdmin ?? false;
+}
+
+<div class="container my-4">
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-podcast me-2"></i>@ViewData["Title"]
+        </h1>
+        @if (isAdmin)
+        {
+            <p class="lead text-muted">
+                <span class="badge bg-danger me-2">Admin View</span>
+                Managing all podcasts in the system
+            </p>
+        }
+        else
+        {
+            <p class="lead text-muted">Manage your created podcasts and episodes</p>
+        }
+    </div>
+
+    <div class="mb-4">
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create New Podcast
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var podcast in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-lg h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-white">
+                                <i class="fas fa-podcast me-2"></i>
+                                @podcast.Title
+                            </h5>
+                            @if (isAdmin && podcast.CreatorID != User.Identity?.Name)
+                            {
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-user-shield"></i>
+                                </span>
+                            }
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-3">
+                                @(podcast.Description.Length > 100 
+                                    ? podcast.Description.Substring(0, 100) + "..." 
+                                    : podcast.Description)
+                            </p>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-user me-1"></i>
+                                    Creator: @podcast.CreatorID
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Created: @podcast.CreatedDate.ToString("MMM dd, yyyy")
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a asp-action="Details" asp-route-id="@podcast.PodcastID" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-info-circle"></i> Details
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@podcast.PodcastID" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteModal-@podcast.PodcastID">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteModal-@podcast.PodcastID" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+                            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                                <h5 class="modal-title text-light">
+                                    <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>
+                                    Confirm Delete
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-light">
+                                <p>Are you sure you want to delete the podcast <strong>"@podcast.Title"</strong>?</p>
+                                <p class="text-danger">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    This will also delete all episodes associated with this podcast!
+                                </p>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form asp-action="Delete" asp-route-id="@podcast.PodcastID" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash me-1"></i>Delete Podcast
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-podcast text-muted mb-3" style="font-size: 4rem; color: var(--primary-red) !important;"></i>
+                    @if (isAdmin)
+                    {
+                        <h4 class="text-muted mb-3">No Podcasts in System</h4>
+                        <p class="text-muted mb-4">There are no podcasts created yet by any users.</p>
+                    }
+                    else
+                    {
+                        <h4 class="text-muted mb-3">You Haven't Created Any Podcasts Yet</h4>
+                        <p class="text-muted mb-4">Start sharing your voice with the world!</p>
+                    }
+                    <a asp-action="Create" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Create Your First Podcast
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

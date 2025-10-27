@@ -1,0 +1,119 @@
+@model IEnumerable<GroupProject.Code.Models.Episode>
+@{
+    ViewData["Title"] = "Search Results";
+    var searchTerm = ViewBag.SearchTerm as string;
+    var searchType = ViewBag.SearchType as string;
+    var allPodcasts = ViewBag.AllPodcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-search me-2"></i>Search Results
+        </h1>
+        <p class="lead text-muted">
+            Found <strong>@Model.Count()</strong> episode(s) for "<strong>@searchTerm</strong>"
+            @if (!string.IsNullOrEmpty(searchType))
+            {
+                <span> in <strong>@searchType</strong></span>
+            }
+        </p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <form asp-action="Search" method="get">
+                <div class="input-group input-group-lg mb-3">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search episodes..." value="@searchTerm" required />
+                    <select name="searchType" class="form-select" style="max-width: 150px;">
+                        <option value="all" selected>All</option>
+                        <option value="topic">By Topic</option>
+                        <option value="host">By Host</option>
+                    </select>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var episode in Model)
+            {
+                var podcast = allPodcasts?.FirstOrDefault(p => p.PodcastID == episode.PodcastID);
+                
+                <div class="col-12">
+                    <div class="card shadow-lg">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h4 class="text-white mb-2">
+                                        <i class="fas fa-play-circle me-2" style="color: var(--primary-red);"></i>
+                                        @episode.Title
+                                    </h4>
+                                    @if (podcast != null)
+                                    {
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-podcast me-1"></i>
+                                            <strong>Podcast:</strong> @podcast.Title
+                                            <span class="mx-2">•</span>
+                                            <i class="fas fa-user me-1"></i>
+                                            <strong>Host:</strong> @podcast.CreatorID
+                                        </p>
+                                    }
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-calendar me-1"></i>@episode.ReleaseDate.ToString("MMM dd, yyyy")
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock me-1"></i>@episode.Duration.ToString(@"hh\:mm\:ss")
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-eye me-1"></i><span data-episode-views="@episode.EpisodeID">@episode.NumberOfViews.ToString("N0") views</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-play me-1"></i>@episode.playCount.ToString("N0") plays
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="d-flex flex-column gap-2">
+                                        <a asp-action="Details" asp-route-id="@episode.EpisodeID" class="btn btn-primary">
+                                            <i class="fas fa-info-circle me-1"></i>View Details
+                                        </a>
+                                        <a asp-controller="Comment" asp-action="Index" asp-route-episodeId="@episode.EpisodeID" class="btn btn-outline-primary">
+                                            <i class="fas fa-comment me-1"></i>Comments
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-search text-muted mb-3" style="font-size: 4rem; color: var(--primary-red) !important;"></i>
+                    <h4 class="text-muted mb-3">No Episodes Found</h4>
+                    <p class="text-muted mb-4">Try adjusting your search terms or search type.</p>
+                    <a asp-action="Browse" class="btn btn-primary btn-lg">
+                        <i class="fas fa-th-large me-2"></i>Browse All Podcasts
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4 text-center">
+        <a asp-action="Browse" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Browse
+        </a>
+        <a asp-action="Popular" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-fire me-1"></i>View Popular Episodes
+        </a>
+    </div>
+</div>

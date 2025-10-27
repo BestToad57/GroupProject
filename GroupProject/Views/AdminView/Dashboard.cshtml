@@ -1,0 +1,50 @@
+﻿@model GroupProject.Code.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>Admin Dashboard</h2>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+			<h5 class="card-title">Total Users</h5>
+            <p>@Model.TotalUsers</p>
+		</div>
+    </div>
+    <div class="col-md-4">
+		<div class="card text-white bg-success mb-3">
+            <h5 class="card-title">Total Podcasts</h5>
+            <p>@Model.TotalPodcast</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <h5 class="card-title">Total Episode</h5>
+            <p>@Model.TotalEpisodes</p>
+        </div>
+    </div>
+
+    <h3>Pending Podcast</h3>
+    <table>
+        <thread>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+        </thread>
+        <tbody>
+            @foreach (var podcast in Model.PendingPodcast)
+            {
+                <tr>
+                    <td>@podcast.Title</td>
+                    <td>@podcast.Description</td>
+                </tr>
+			}
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

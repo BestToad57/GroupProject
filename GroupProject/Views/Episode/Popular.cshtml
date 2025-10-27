@@ -1,0 +1,139 @@
+@model IEnumerable<GroupProject.Code.Models.Episode>
+@{
+    ViewData["Title"] = "Most Popular Episodes";
+    var allPodcasts = ViewBag.AllPodcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-fire me-2"></i>Most Popular Episodes
+        </h1>
+        <p class="lead text-muted">Top episodes ranked by number of views</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @{
+                int rank = 1;
+            }
+            @foreach (var episode in Model)
+            {
+                var podcast = allPodcasts?.FirstOrDefault(p => p.PodcastID == episode.PodcastID);
+                var rankBadgeClass = rank <= 3 ? "bg-warning text-dark" : "bg-secondary";
+                
+                <div class="col-12">
+                    <div class="card shadow-lg">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    <span class="badge @rankBadgeClass" style="font-size: 1.5rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                        #@rank
+                                    </span>
+                                </div>
+                                <div class="col-md-7">
+                                    <h4 class="text-white mb-2">
+                                        @if (rank == 1)
+                                        {
+                                            <i class="fas fa-crown me-2" style="color: gold;"></i>
+                                        }
+                                        else if (rank == 2)
+                                        {
+                                            <i class="fas fa-medal me-2" style="color: silver;"></i>
+                                        }
+                                        else if (rank == 3)
+                                        {
+                                            <i class="fas fa-medal me-2" style="color: #CD7F32;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-play-circle me-2" style="color: var(--primary-red);"></i>
+                                        }
+                                        @episode.Title
+                                    </h4>
+                                    @if (podcast != null)
+                                    {
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-podcast me-1"></i>
+                                            <strong>Podcast:</strong> @podcast.Title
+                                            <span class="mx-2">•</span>
+                                            <i class="fas fa-user me-1"></i>
+                                            <strong>Host:</strong> @podcast.CreatorID
+                                        </p>
+                                    }
+                                    <p class="text-muted small mb-0">
+                                        <i class="fas fa-calendar me-1"></i>@episode.ReleaseDate.ToString("MMM dd, yyyy")
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock me-1"></i>@episode.Duration.ToString(@"hh\:mm\:ss")
+                                    </p>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="mb-2">
+                                        <h3 class="text-primary mb-0">
+                                            <i class="fas fa-eye"></i>
+                                        </h3>
+                                        <h5 class="text-white mb-0" data-episode-views="@episode.EpisodeID">@episode.NumberOfViews.ToString("N0")</h5>
+                                        <small class="text-muted">views</small>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-success mb-0">
+                                            <i class="fas fa-play"></i> @episode.playCount.ToString("N0")
+                                        </h5>
+                                        <small class="text-muted">plays</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <div class="d-flex flex-column gap-2">
+                                        <a asp-action="Details" asp-route-id="@episode.EpisodeID" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-info-circle me-1"></i>Details
+                                        </a>
+                                        <a asp-controller="Comment" asp-action="Index" asp-route-episodeId="@episode.EpisodeID" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-comment me-1"></i>Comment
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                rank++;
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-chart-line text-muted mb-3" style="font-size: 4rem; color: var(--primary-red) !important;"></i>
+                    <h4 class="text-muted mb-3">No Episodes Available</h4>
+                    <p class="text-muted mb-4">There are no episodes to display yet.</p>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-5">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-info-circle me-2"></i>About Popularity Rankings
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-0">
+                    <strong>Rankings are based on:</strong> Total number of views for each episode. 
+                    Views are counted when users visit the episode details page. 
+                    Play counts track how many times the audio has been played.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a asp-action="Browse" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>Back to Browse
+        </a>
+    </div>
+</div>

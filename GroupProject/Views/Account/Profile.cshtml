@@ -1,0 +1,280 @@
+@{
+    ViewData["Title"] = "My Profile";
+    var userPodcasts = ViewBag.UserPodcasts as List<GroupProject.Code.Models.Podcast>;
+    var userEpisodes = ViewBag.UserEpisodes as List<GroupProject.Code.Models.Episode>;
+    var subscribedPodcasts = ViewBag.SubscribedPodcasts as List<GroupProject.Code.Models.Podcast>;
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-user-circle me-2"></i>My Profile
+        </h1>
+        <p class="lead text-muted">Overview of your PodcastHub activity</p>
+    </div>
+
+    <!-- User Info Card -->
+    <div class="card shadow-lg mb-4">
+        <div class="card-header">
+            <h3 class="mb-0 text-white">
+                <i class="fas fa-id-card me-2"></i>Account Information
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4 text-light">
+                            <i class="fas fa-envelope me-2"></i>Email:
+                        </dt>
+                        <dd class="col-sm-8 text-muted">
+                            @User.Identity.Name
+                        </dd>
+
+                        <dt class="col-sm-4 text-light">
+                            <i class="fas fa-user-tag me-2"></i>Role:
+                        </dt>
+                        <dd class="col-sm-8">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <span class="badge bg-danger">Admin</span>
+                            }
+                            else if (User.IsInRole("Podcaster"))
+                            {
+                                <span class="badge bg-primary">Podcaster</span>
+                            }
+                            else if (User.IsInRole("Listener"))
+                            {
+                                <span class="badge bg-success">Listener</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-md-end">
+                        <p class="text-muted mb-2">Member since</p>
+                        <h5 class="text-light">@DateTime.Now.ToString("MMMM yyyy")</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Podcaster/Admin Content Summary -->
+    @if (User.IsInRole("Podcaster") || User.IsInRole("Admin"))
+    {
+        <div class="row g-4 mb-4">
+            <!-- My Podcasts Summary -->
+            <div class="col-md-6">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header">
+                        <h4 class="mb-0 text-white">
+                            <i class="fas fa-podcast me-2"></i>My Podcasts
+                            <span class="badge bg-light text-dark ms-2">@(userPodcasts?.Count ?? 0)</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        @if (userPodcasts != null && userPodcasts.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var podcast in userPodcasts.Take(5))
+                                {
+                                    <div class="list-group-item bg-transparent border-secondary">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 text-light">@podcast.Title</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @podcast.CreatedDate.ToString("MMM dd, yyyy")
+                                                </small>
+                                            </div>
+                                            <a asp-controller="Podcast" asp-action="Details" asp-route-id="@podcast.PodcastID" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (userPodcasts.Count > 5)
+                            {
+                                <div class="text-center mt-3">
+                                    <a asp-controller="Podcast" asp-action="Index" class="btn btn-outline-primary">
+                                        <i class="fas fa-list me-1"></i>View All Podcasts
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-podcast text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="text-muted">You haven't created any podcasts yet.</p>
+                                <a asp-controller="Podcast" asp-action="Create" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Create Your First Podcast
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Episodes Summary -->
+            <div class="col-md-6">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header">
+                        <h4 class="mb-0 text-white">
+                            <i class="fas fa-list me-2"></i>My Episodes
+                            <span class="badge bg-light text-dark ms-2">@(userEpisodes?.Count ?? 0)</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        @if (userEpisodes != null && userEpisodes.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var episode in userEpisodes.OrderByDescending(e => e.ReleaseDate).Take(5))
+                                {
+                                    <div class="list-group-item bg-transparent border-secondary">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 text-light">@episode.Title</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @episode.ReleaseDate.ToString("MMM dd, yyyy")
+                                                    <span class="mx-1">•</span>
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @episode.Duration.ToString(@"hh\:mm\:ss")
+                                                </small>
+                                            </div>
+                                            <a asp-controller="Episode" asp-action="Details" asp-route-id="@episode.EpisodeID" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (userEpisodes.Count > 5)
+                            {
+                                <div class="text-center mt-3">
+                                    <a asp-controller="Episode" asp-action="Index" class="btn btn-outline-primary">
+                                        <i class="fas fa-list me-1"></i>View All Episodes
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-list text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="text-muted">You haven't created any episodes yet.</p>
+                                <a asp-controller="Episode" asp-action="Create" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Create Your First Episode
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- My Subscriptions Summary (All Users) -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h4 class="mb-0 text-white">
+                        <i class="fas fa-bookmark me-2"></i>My Subscriptions
+                        <span class="badge bg-light text-dark ms-2">@(subscribedPodcasts?.Count ?? 0)</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (subscribedPodcasts != null && subscribedPodcasts.Any())
+                    {
+                        <div class="row g-3">
+                            @foreach (var podcast in subscribedPodcasts.Take(6))
+                            {
+                                <div class="col-md-4">
+                                    <div class="card" style="background-color: var(--dark-gray);">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-light">@podcast.Title</h6>
+                                            <p class="card-text text-muted small">
+                                                @(podcast.Description.Length > 80 
+                                                    ? podcast.Description.Substring(0, 80) + "..." 
+                                                    : podcast.Description)
+                                            </p>
+                                            <div class="d-flex gap-2">
+                                                <a asp-controller="Podcast" asp-action="Details" asp-route-id="@podcast.PodcastID" 
+                                                   class="btn btn-sm btn-outline-primary flex-fill">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @if (subscribedPodcasts.Count > 6)
+                        {
+                            <div class="text-center mt-3">
+                                <a asp-controller="Subscription" asp-action="Index" class="btn btn-outline-primary">
+                                    <i class="fas fa-list me-1"></i>View All Subscriptions
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-bookmark text-muted mb-3" style="font-size: 3rem;"></i>
+                            <p class="text-muted">You haven't subscribed to any podcasts yet.</p>
+                            <a asp-controller="Episode" asp-action="Browse" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Browse Podcasts
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card shadow-lg mt-4">
+        <div class="card-header">
+            <h4 class="mb-0 text-white">
+                <i class="fas fa-bolt me-2"></i>Quick Actions
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a asp-controller="Episode" asp-action="Browse" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-search me-2"></i>Browse Podcasts
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a asp-controller="Subscription" asp-action="Index" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-bookmark me-2"></i>My Subscriptions
+                    </a>
+                </div>
+                @if (User.IsInRole("Podcaster") || User.IsInRole("Admin"))
+                {
+                    <div class="col-md-4">
+                        <a asp-controller="Podcast" asp-action="Create" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-2"></i>Create Podcast
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

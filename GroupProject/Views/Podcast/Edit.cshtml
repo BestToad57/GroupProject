@@ -1,0 +1,84 @@
+@model GroupProject.Code.Models.Podcast
+@{
+    ViewData["Title"] = "Edit Podcast";
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h2 class="text-white mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Podcast
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Hidden fields -->
+                        <input type="hidden" asp-for="PodcastID" />
+                        <input type="hidden" asp-for="CreatorID" />
+                        <input type="hidden" asp-for="CreatedDate" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label text-light">
+                                <i class="fas fa-heading me-1"></i>Podcast Title
+                            </label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter podcast title" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label text-light">
+                                <i class="fas fa-align-left me-1"></i>Description
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="5" 
+                                      placeholder="Describe your podcast..." required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Creator:</strong> @Model.CreatorID
+                            <br />
+                            <strong>Created:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy")
+                            <br />
+                            <small class="text-muted">These fields cannot be changed</small>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <a asp-action="Details" asp-route-id="@Model.PodcastID" class="btn btn-outline-primary">
+                                <i class="fas fa-info-circle me-1"></i>View Details
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Warning Box -->
+            <div class="card mt-4" style="background-color: rgba(220, 53, 69, 0.1); border-color: var(--primary-red);">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: var(--primary-red);">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Important Notes
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Editing the podcast will not affect existing episodes</li>
+                        <li>The creator and creation date cannot be changed</li>
+                        <li>Changes will be visible immediately to all subscribers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

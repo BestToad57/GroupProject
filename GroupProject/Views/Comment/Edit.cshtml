@@ -1,0 +1,70 @@
+@model GroupProject.Code.Models.Comment
+@{
+    ViewData["Title"] = "Edit Comment";
+    var episode = ViewBag.Episode as GroupProject.Code.Models.Episode;
+    var hoursRemaining = ViewBag.HoursRemaining as double?;
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h3 class="text-white mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Comment
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (episode != null)
+                    {
+                        <div class="alert alert-info mb-4">
+                            <strong><i class="fas fa-podcast me-1"></i>Episode:</strong> @episode.Title
+                        </div>
+                    }
+
+                    @if (hoursRemaining.HasValue)
+                    {
+                        <div class="alert alert-warning mb-4">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Time Remaining:</strong> You have <strong>@hoursRemaining.Value.ToString("F1")</strong> hours left to edit this comment.
+                            <br />
+                            <small class="text-muted">Comments can only be edited within 24 hours of posting.</small>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="CommentID" />
+                        <input type="hidden" asp-for="EpisodeID" />
+                        <input type="hidden" asp-for="UserID" />
+                        <input type="hidden" asp-for="CommentDate" />
+                        
+                        <div class="form-group mb-4">
+                            <label asp-for="CommentText" class="form-label fw-semibold">
+                                <i class="fas fa-comment me-1"></i>Your Comment
+                            </label>
+                            <textarea asp-for="CommentText" class="form-control" rows="5" maxlength="1000" required></textarea>
+                            <span asp-validation-for="CommentText" class="text-danger small"></span>
+                            <div class="form-text">
+                                Maximum 1000 characters. Posted: @Model.CommentDate.ToString("MMM dd, yyyy 'at' hh:mm tt")
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" asp-route-episodeId="@Model.EpisodeID" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

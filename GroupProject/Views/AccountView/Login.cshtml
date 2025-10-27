@@ -1,0 +1,108 @@
+﻿@model GroupProject.Code.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <!-- Left side - Info -->
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, var(--primary-red) 0%, var(--black) 100%);">
+            <div class="text-center">
+                <i class="fas fa-headphones mb-4" style="font-size: 5rem; opacity: 0.9;"></i>
+                <h3 class="fw-bold mb-4">Welcome Back!</h3>
+                <p class="lead mb-4">Continue your podcast journey with PodcastHub</p>
+                <div class="row text-center">
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-play-circle mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Listen to Latest Episodes</p>
+                        <small class="text-light opacity-75">Discover new content daily</small>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-comments mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Engage with Community</p>
+                        <small class="text-light opacity-75">Share thoughts and feedback</small>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-bookmark mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Manage Subscriptions</p>
+                        <small class="text-light opacity-75">Keep track of favorites</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center" style="background-color: var(--dark-gray);">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold" style="color: var(--primary-red);">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </h2>
+                    <p class="text-muted">Welcome back! Please sign in to your account</p>
+                </div>
+
+                <form asp-action="Login" method="post" class="needs-validation" novalidate>
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold text-light">
+                            <i class="fas fa-envelope me-1"></i>Email Address
+                        </label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="Enter your email" required />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold text-light">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </label>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Enter your password" required />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input" id="rememberMe" style="background-color: var(--medium-gray); border-color: var(--primary-red);" />
+                            <label asp-for="RememberMe" class="form-check-label text-light" for="rememberMe">
+                                Remember me on this device
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-2 text-light">Don't have an account? 
+                            <a asp-action="Register" class="fw-semibold text-decoration-none" style="color: var(--primary-red);">Create Account</a>
+                        </p>
+                        <a href="#" class="text-muted small text-decoration-none">Forgot your password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+}

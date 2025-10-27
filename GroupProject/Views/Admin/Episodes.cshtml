@@ -1,0 +1,205 @@
+@model IEnumerable<GroupProject.Code.Models.Episode>
+@{
+    ViewData["Title"] = "All Episodes";
+    var allPodcasts = ViewBag.AllPodcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-list me-2"></i>All Episodes
+        </h1>
+        <p class="lead text-muted">Manage all episodes in the system</p>
+    </div>
+
+    <div class="mb-4">
+        <div class="card shadow-lg">
+            <div class="card-body text-center">
+                <h2 class="mb-0">@Model.Count()</h2>
+                <p class="text-muted mb-0">Total Episodes</p>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-list me-2"></i>Episode List
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-podcast me-1"></i>Podcast</th>
+                                <th><i class="fas fa-heading me-1"></i>Episode Title</th>
+                                <th><i class="fas fa-calendar me-1"></i>Released</th>
+                                <th><i class="fas fa-clock me-1"></i>Duration</th>
+                                <th><i class="fas fa-eye me-1"></i>Views</th>
+                                <th><i class="fas fa-play me-1"></i>Plays</th>
+                                <th><i class="fas fa-cog me-1"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var episode in Model.OrderByDescending(e => e.ReleaseDate))
+                            {
+                                var podcast = allPodcasts?.FirstOrDefault(p => p.PodcastID == episode.PodcastID);
+                                <tr>
+                                    <td class="align-middle">@episode.EpisodeID</td>
+                                    <td class="align-middle">
+                                        @if (podcast != null)
+                                        {
+                                            <strong>@podcast.Title</strong>
+                                            <br />
+                                            <small class="text-muted">by @podcast.CreatorID</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unknown</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong>@episode.Title</strong>
+                                    </td>
+                                    <td class="align-middle">
+                                        @episode.ReleaseDate.ToString("MMM dd, yyyy")
+                                    </td>
+                                    <td class="align-middle">
+                                        @episode.Duration.ToString(@"hh\:mm\:ss")
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-info">@episode.NumberOfViews.ToString("N0")</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-success">@episode.playCount.ToString("N0")</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="btn-group" role="group">
+                                            <a asp-controller="Episode" asp-action="Details" asp-route-id="@episode.EpisodeID" 
+                                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-controller="Episode" asp-action="Edit" asp-route-id="@episode.EpisodeID" 
+                                               class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal-@episode.EpisodeID"
+                                                    title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="playEpisode('@episode.AudioFileURL', '@episode.Title', '@episode.Duration.ToString(@"hh\:mm\:ss")')"
+                                                    title="Play">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal-@episode.EpisodeID" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+                                            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                                                <h5 class="modal-title text-light">
+                                                    <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>
+                                                    Confirm Delete
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-light">
+                                                <p>Are you sure you want to delete <strong>"@episode.Title"</strong>?</p>
+                                                <p class="text-danger">
+                                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                                    This action cannot be undone!
+                                                </p>
+                                            </div>
+                                            <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form asp-controller="Episode" asp-action="Delete" asp-route-id="@episode.EpisodeID" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-trash me-1"></i>Delete Episode
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-list text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mb-3">No Episodes Yet</h4>
+                    <p class="text-muted">There are no episodes in the system.</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Audio Player Modal -->
+<div class="modal fade" id="audioPlayerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-podcast me-2" style="color: var(--primary-red);"></i>
+                    <span id="modalEpisodeTitle">Now Playing</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <audio id="audioPlayer" controls style="width: 100%; margin-bottom: 15px;">
+                    <source id="audioSource" src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <div id="episodeInfo" class="text-muted small"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function playEpisode(audioUrl, episodeTitle, duration) {
+            document.getElementById('modalEpisodeTitle').textContent = episodeTitle;
+            document.getElementById('audioSource').src = audioUrl;
+            document.getElementById('episodeInfo').innerHTML = 
+                `<p class="mb-1"><strong>Duration:</strong> ${duration}</p>
+                 <p class="mb-0 text-muted small">Audio URL: ${audioUrl}</p>`;
+            
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.load();
+            
+            const modal = new bootstrap.Modal(document.getElementById('audioPlayerModal'));
+            modal.show();
+            
+            document.getElementById('audioPlayerModal').addEventListener('shown.bs.modal', function () {
+                audioPlayer.play().catch(error => {
+                    console.log('Auto-play prevented:', error);
+                });
+            }, { once: true });
+        }
+
+        document.getElementById('audioPlayerModal').addEventListener('hidden.bs.modal', function () {
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.pause();
+        });
+    </script>
+}

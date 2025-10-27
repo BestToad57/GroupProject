@@ -1,0 +1,127 @@
+@model GroupProject.Code.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <!-- Left side - Form -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center" style="background-color: var(--dark-gray);">
+            <div class="w-100" style="max-width: 400px;">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold" style="color: var(--primary-red);">
+                        <i class="fas fa-user-plus me-2"></i>Join PodcastHub
+                    </h2>
+                    <p class="text-muted">Create your account and start your podcast journey</p>
+                </div>
+
+                <form asp-action="Register" method="post" class="needs-validation" novalidate>
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label fw-semibold text-light">
+                            <i class="fas fa-user me-1"></i>Username
+                        </label>
+                        <input asp-for="Username" class="form-control form-control-lg" placeholder="Enter your username" required />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold text-light">
+                            <i class="fas fa-envelope me-1"></i>Email Address
+                        </label>
+                        <input asp-for="Email" class="form-control form-control-lg" placeholder="Enter your email" required />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold text-light">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </label>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Create a password" required />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                        <div class="form-text" style="color: #adb5bd;">Must be at least 6 characters with uppercase, lowercase, and number.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label fw-semibold text-light">
+                            <i class="fas fa-lock me-1"></i>Confirm Password
+                        </label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg" placeholder="Confirm your password" required />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Role" class="form-label fw-semibold text-light">
+                            <i class="fas fa-user-tag me-1"></i>I want to join as
+                        </label>
+                        <select asp-for="Role" class="form-select form-select-lg" required>
+                            <option value="">Choose your role...</option>
+                            <option value="Listener">?? Listener - Discover and enjoy podcasts</option>
+                            <option value="Podcaster">??? Podcaster - Create and manage podcasts</option>
+                            <option value="Admin">?? Administrator - Manage platform</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0 text-light">Already have an account? 
+                            <a asp-action="Login" class="fw-semibold text-decoration-none" style="color: var(--primary-red);">Sign In</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right side - Info -->
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, var(--black) 0%, var(--primary-red) 100%);">
+            <div class="text-center">
+                <i class="fas fa-podcast mb-4" style="font-size: 5rem; opacity: 0.9;"></i>
+                <h3 class="fw-bold mb-4">Start Your Podcast Journey</h3>
+                <div class="row text-center">
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-microphone-alt mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Create & Manage Podcasts</p>
+                        <small class="text-light opacity-75">Professional tools for content creators</small>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-users mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Build Your Audience</p>
+                        <small class="text-light opacity-75">Connect with listeners worldwide</small>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i class="fas fa-chart-line mb-2" style="font-size: 2rem;"></i>
+                        <p class="mb-0 h5">Track Performance</p>
+                        <small class="text-light opacity-75">Analytics and insights dashboard</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+}

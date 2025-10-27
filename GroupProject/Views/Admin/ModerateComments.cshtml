@@ -1,0 +1,201 @@
+@model IEnumerable<GroupProject.Code.Models.Comment>
+@{
+    ViewData["Title"] = "Moderate Comments";
+    var allEpisodes = ViewBag.AllEpisodes as IEnumerable<GroupProject.Code.Models.Episode>;
+    var allPodcasts = ViewBag.AllPodcasts as IEnumerable<GroupProject.Code.Models.Podcast>;
+    var totalComments = ViewBag.TotalComments ?? 0;
+    var episodesWithComments = ViewBag.EpisodesWithComments ?? 0;
+}
+
+<div class="container my-4">
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-comments me-2"></i>Moderate Comments
+        </h1>
+        <p class="lead text-muted">Review and manage all user comments</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-lg text-center">
+                <div class="card-body">
+                    <i class="fas fa-comment fa-2x mb-2" style="color: var(--primary-red);"></i>
+                    <h4 class="mb-0">@totalComments</h4>
+                    <small class="text-muted">Total Comments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-lg text-center">
+                <div class="card-body">
+                    <i class="fas fa-play-circle fa-2x mb-2" style="color: var(--primary-red);"></i>
+                    <h4 class="mb-0">@episodesWithComments</h4>
+                    <small class="text-muted">Episodes with Comments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-lg text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x mb-2" style="color: var(--primary-red);"></i>
+                    <h4 class="mb-0">@(Model?.Select(c => c.UserID).Distinct().Count() ?? 0)</h4>
+                    <small class="text-muted">Unique Commenters</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-list me-2"></i>All Comments
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-user me-1"></i>User</th>
+                                <th><i class="fas fa-play-circle me-1"></i>Episode</th>
+                                <th><i class="fas fa-comment me-1"></i>Comment</th>
+                                <th><i class="fas fa-calendar me-1"></i>Date</th>
+                                <th><i class="fas fa-cog me-1"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var comment in Model)
+                            {
+                                var episode = allEpisodes?.FirstOrDefault(e => e.EpisodeID == comment.EpisodeID);
+                                var podcast = allPodcasts?.FirstOrDefault(p => p.PodcastID == episode?.PodcastID);
+
+                                <tr>
+                                    <td class="align-middle">@comment.CommentID</td>
+                                    <td class="align-middle">
+                                        <i class="fas fa-user-circle me-1"></i>@comment.UserID
+                                    </td>
+                                    <td class="align-middle">
+                                        @if (episode != null)
+                                        {
+                                            <strong>@episode.Title</strong>
+                                            <br />
+                                            <small class="text-muted">@podcast?.Title</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unknown</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle">
+                                        @(comment.CommentText.Length > 100 
+                                            ? comment.CommentText.Substring(0, 100) + "..." 
+                                            : comment.CommentText)
+                                    </td>
+                                    <td class="align-middle">
+                                        @comment.CommentDate.ToString("MMM dd, yyyy")
+                                        <br />
+                                        <small class="text-muted">@comment.CommentDate.ToString("hh:mm tt")</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="btn-group" role="group">
+                                            <a asp-controller="Comment" asp-action="Index" asp-route-episodeId="@comment.EpisodeID" 
+                                               class="btn btn-sm btn-outline-primary" title="View in Context">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal-@comment.CommentID"
+                                                    title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-comments text-muted mb-3" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <h4 class="text-muted mb-3">No Comments Yet</h4>
+                    <p class="text-muted">There are no comments in the system to moderate.</p>
+                    <a asp-action="Dashboard" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modals (moved outside table to prevent positioning issues) -->
+@if (Model != null && Model.Any())
+{
+    @foreach (var comment in Model)
+    {
+        var episode = allEpisodes?.FirstOrDefault(e => e.EpisodeID == comment.EpisodeID);
+        
+        <div class="modal fade" id="deleteModal-@comment.CommentID" tabindex="-1" aria-labelledby="deleteModalLabel-@comment.CommentID" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+                    <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                        <h5 class="modal-title text-light" id="deleteModalLabel-@comment.CommentID">
+                            <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>
+                            Confirm Delete
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-light">
+                        <p>Are you sure you want to delete this comment by <strong>@comment.UserID</strong>?</p>
+                        <p class="text-muted mb-2">
+                            <strong>Comment:</strong><br />
+                            "@comment.CommentText"
+                        </p>
+                        <p class="text-danger">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            This action cannot be undone!
+                        </p>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form asp-controller="Comment" asp-action="Delete" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@comment.CommentID" />
+                            <input type="hidden" name="episodeId" value="@comment.EpisodeID" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Delete Comment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,43 @@
+﻿@model GroupProject.Code.Models.Episode
+@{
+    ViewData["Title"] = "Delete Episode";
+}
+
+<h2 class="mb-4">Delete Episode</h2>
+
+<h4>Are you sure you want to Delete this Episode?</h4>
+<hr />
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            Title
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Title
+        </dd>
+        <dt class="col-sm-2">
+            Release Date
+        </dt>
+        <dd class="col-sm-10">
+            @Model.ReleaseDate.ToShortDateString()
+        </dd>
+        <dt class="col-sm-2">
+            Duration (mins)
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Duration
+		</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="EpisodeID" />
+
+    <button type="submit" class="btn btn-danger">Delete Episode</button>
+	<a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

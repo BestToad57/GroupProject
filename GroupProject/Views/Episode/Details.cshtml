@@ -1,0 +1,308 @@
+@model GroupProject.Code.Models.Episode
+@{
+    ViewData["Title"] = "Episode Details";
+    var podcast = ViewBag.Podcast as GroupProject.Code.Models.Podcast;
+    var comments = ViewBag.Comments as List<GroupProject.Code.Models.Comment>;
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="text-white mb-0">
+                        <i class="fas fa-play-circle me-2"></i>@Model.Title
+                    </h2>
+                    <a asp-action="Browse" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Browse
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="text-light mb-3">
+                                <i class="fas fa-info-circle me-2" style="color: var(--primary-red);"></i>
+                                Episode Information
+                            </h4>
+                            
+                            <dl class="row">
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-hashtag me-2"></i>Episode ID:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    @Model.EpisodeID
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-podcast me-2"></i>Podcast:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    @if (podcast != null)
+                                    {
+                                        <strong>@podcast.Title</strong>
+                                        <br />
+                                        <small>by @podcast.CreatorID</small>
+                                    }
+                                    else
+                                    {
+                                        <span>Podcast ID: @Model.PodcastID</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-heading me-2"></i>Title:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    @Model.Title
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-calendar me-2"></i>Release Date:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    @Model.ReleaseDate.ToString("MMMM dd, yyyy 'at' hh:mm tt")
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-clock me-2"></i>Duration:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    @Model.Duration.ToString(@"hh\:mm\:ss")
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-eye me-2"></i>Views:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    <span class="badge bg-info" data-episode-views="@Model.EpisodeID">@Model.NumberOfViews.ToString("N0")</span>
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-play me-2"></i>Plays:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    <span class="badge bg-success">@Model.playCount.ToString("N0")</span>
+                                </dd>
+
+                                <dt class="col-sm-4 text-light">
+                                    <i class="fas fa-link me-2"></i>Audio URL:
+                                </dt>
+                                <dd class="col-sm-8 text-muted">
+                                    <small class="text-break">@Model.AudioFileURL</small>
+                                </dd>
+                            </dl>
+
+                            <!-- Audio Player -->
+                            <div class="mt-4">
+                                <h5 class="text-light mb-3">
+                                    <i class="fas fa-headphones me-2" style="color: var(--primary-red);"></i>
+                                    Listen Now
+                                </h5>
+                                <audio controls style="width: 100%;" class="mb-3">
+                                    <source src="@Model.AudioFileURL" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card" style="background-color: rgba(220, 53, 69, 0.1); border-color: var(--primary-red);">
+                                <div class="card-body">
+                                    <h5 class="card-title" style="color: var(--primary-red);">
+                                        <i class="fas fa-cog me-2"></i>Actions
+                                    </h5>
+                                    <div class="d-grid gap-2">
+                                        @if (User.IsInRole("Admin") || (podcast != null && podcast.CreatorID == User.Identity?.Name))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@Model.EpisodeID" class="btn btn-warning">
+                                                <i class="fas fa-edit me-2"></i>Edit Episode
+                                            </a>
+                                            <button type="button" class="btn btn-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal">
+                                                <i class="fas fa-trash me-2"></i>Delete Episode
+                                            </button>
+                                        }
+                                        <a asp-controller="Comment" asp-action="Index" asp-route-episodeId="@Model.EpisodeID" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-comments me-2"></i>Manage Comments
+                                        </a>
+                                        <a asp-action="Browse" class="btn btn-outline-secondary">
+                                            <i class="fas fa-list me-2"></i>Back to Browse
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card" style="background-color: rgba(52, 58, 64, 0.5); border-color: var(--primary-red);">
+                                <div class="card-header" style="background-color: rgba(220, 53, 69, 0.2); border-bottom: 2px solid var(--primary-red);">
+                                    <h4 class="text-light mb-0">
+                                        <i class="fas fa-comments me-2" style="color: var(--primary-red);"></i>
+                                        Comments (@(comments?.Count ?? 0))
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    @if (comments != null && comments.Any())
+                                    {
+                                        <div class="list-group list-group-flush">
+                                            @foreach (var comment in comments.OrderByDescending(c => c.CommentDate))
+                                            {
+                                                <div class="list-group-item mb-3" style="background-color: rgba(52, 58, 64, 0.7); border-color: var(--primary-red);">
+                                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                                        <h6 class="mb-1 text-light">
+                                                            <i class="fas fa-user-circle me-2" style="color: var(--primary-red);"></i>
+                                                            @comment.UserID
+                                                        </h6>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            @comment.CommentDate.ToString("MMM dd, yyyy 'at' hh:mm tt")
+                                                        </small>
+                                                    </div>
+                                                    <p class="mb-1 mt-2 text-light">@comment.CommentText</p>
+                                                
+                                                    @if (User.Identity?.Name == comment.UserID || User.IsInRole("Admin"))
+                                                    {
+                                                        <div class="mt-2">
+                                                            <a asp-controller="Comment" asp-action="Edit" asp-route-id="@comment.CommentID" 
+                                                                class="btn btn-sm btn-outline-warning me-2">
+                                                                <i class="fas fa-edit me-1"></i>Edit
+                                                            </a>
+                                                            @if (User.IsInRole("Admin"))
+                                                            {
+                                                                <form asp-controller="Comment" asp-action="Delete" asp-route-id="@comment.CommentID" 
+                                                                    method="post" class="d-inline">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                            onclick="return confirm('Are you sure you want to delete this comment?')">
+                                                                        <i class="fas fa-trash me-1"></i>Delete
+                                                                    </button>
+                                                                </form>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-comment-slash fa-3x mb-3" style="color: var(--primary-red); opacity: 0.5;"></i>
+                                            <p class="text-muted mb-0">No comments yet.</p>
+                                            <p class="text-muted">Be the first to share your thoughts!</p>
+                                        </div>
+                                    }
+                                    
+                                    <!-- Add Comment Button -->
+                                    <div class="mt-3 text-center">
+                                        <a asp-controller="Comment" asp-action="Index" asp-route-episodeId="@Model.EpisodeID" 
+                                           class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-2"></i>Add a Comment
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-light">
+                <p>Are you sure you want to delete the episode <strong>"@Model.Title"</strong>?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    This action cannot be undone!
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="Delete" asp-route-id="@Model.EpisodeID" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete Episode
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Track view when Details page loads (only once per session)
+        const episodeId = @Model.EpisodeID;
+        const viewKey = `episode_viewed_${episodeId}`;
+
+        if (!sessionStorage.getItem(viewKey)) {
+            // Mark as viewed
+            sessionStorage.setItem(viewKey, 'true');
+
+            // Track view
+            fetch(`/Episode/TrackView/${episodeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update view count display
+                    const viewElement = document.querySelector(`[data-episode-views="${episodeId}"]`);
+                    if (viewElement) {
+                        viewElement.textContent = data.viewCount.toLocaleString();
+                    }
+                    console.log(`View tracked for episode ${episodeId}. New count: ${data.viewCount}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error tracking view:', error);
+            });
+        }
+
+        // Track play count when audio starts playing
+        const audioPlayer = document.querySelector('audio');
+        if (audioPlayer) {
+            audioPlayer.addEventListener('playing', function() {
+                const playKey = `episode_played_${episodeId}`;
+                if (!sessionStorage.getItem(playKey)) {
+                    sessionStorage.setItem(playKey, 'true');
+
+                    fetch('/Episode/TrackPlay', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ episodeId: episodeId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(`Play tracked for episode ${episodeId}`);
+                    })
+                    .catch(error => {
+                        console.error('Error tracking play:', error);
+                    });
+                }
+            }, { once: true });
+        }
+    </script>
+}

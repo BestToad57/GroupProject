@@ -1,0 +1,125 @@
+﻿@model GroupProject.Code.Models.Episode
+@{
+    ViewData["Title"] = "Create New Episode";
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Create New Episode
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <label asp-for="Title" class="form-label fw-semibold">
+                                    <i class="fas fa-microphone me-1"></i>Episode Title *
+                                </label>
+                                <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter episode title" required />
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="PodcastID" class="form-label fw-semibold">
+                                    <i class="fas fa-podcast me-1"></i>Podcast *
+                                </label>
+                                <select asp-for="PodcastID" class="form-select" required>
+                                    <option value="">Select a podcast...</option>
+                                    <!-- You'll need to populate this from ViewBag or pass podcasts -->
+                                </select>
+                                <span asp-validation-for="PodcastID" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ReleaseDate" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-1"></i>Release Date *
+                                </label>
+                                <input asp-for="ReleaseDate" type="date" class="form-control" required />
+                                <span asp-validation-for="ReleaseDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label for="durationMinutes" class="form-label fw-semibold">
+                                    <i class="fas fa-clock me-1"></i>Duration (minutes) *
+                                </label>
+                                <input type="number" name="durationMinutes" class="form-control" min="1" placeholder="30" required />
+                                <div class="form-text">Duration will be converted to hours:minutes:seconds</div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="NumberOfViews" class="form-label fw-semibold">
+                                    <i class="fas fa-eye me-1"></i>Initial View Count
+                                </label>
+                                <input asp-for="NumberOfViews" type="number" class="form-control" value="0" min="0" />
+                                <span asp-validation-for="NumberOfViews" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label for="audioFile" class="form-label fw-semibold">
+                                    <i class="fas fa-upload me-1"></i>Upload Audio File
+                                </label>
+                                <input type="file" name="audioFile" class="form-control" accept="audio/*" />
+                                <div class="form-text">Supported formats: MP3, WAV, OGG</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-light border-0 mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-semibold mb-2">
+                                            <i class="fas fa-info-circle text-success me-1"></i>Episode Tips
+                                        </h6>
+                                        <ul class="small text-muted mb-0">
+                                            <li>Choose a descriptive title that captures the episode content</li>
+                                            <li>Select the correct podcast this episode belongs to</li>
+                                            <li>Audio files will be uploaded to cloud storage</li>
+                                            <li>You can edit these details later if needed</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Create Episode
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+}

@@ -1,0 +1,151 @@
+@model IEnumerable<GroupProject.Code.Models.Podcast>
+@{
+    ViewData["Title"] = "All Podcasts";
+    var episodeCounts = ViewBag.EpisodeCounts as Dictionary<int, int>;
+}
+
+<div class="container my-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-2" style="color: var(--primary-red);">
+            <i class="fas fa-podcast me-2"></i>All Podcasts
+        </h1>
+        <p class="lead text-muted">Manage all podcasts in the system</p>
+    </div>
+
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">@Model.Count()</h2>
+                        <p class="text-muted mb-0">Total Podcasts</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-body text-center">
+                        <h2 class="mb-0">@(episodeCounts?.Values.Sum() ?? 0)</h2>
+                        <p class="text-muted mb-0">Total Episodes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-list me-2"></i>Podcast List
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-heading me-1"></i>Title</th>
+                                <th><i class="fas fa-user me-1"></i>Creator</th>
+                                <th><i class="fas fa-calendar me-1"></i>Created</th>
+                                <th><i class="fas fa-list me-1"></i>Episodes</th>
+                                <th><i class="fas fa-cog me-1"></i>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var podcast in Model.OrderByDescending(p => p.CreatedDate))
+                            {
+                                <tr>
+                                    <td class="align-middle">@podcast.PodcastID</td>
+                                    <td class="align-middle">
+                                        <strong>@podcast.Title</strong>
+                                        <br />
+                                        <small class="text-muted">
+                                            @(podcast.Description.Length > 60 
+                                                ? podcast.Description.Substring(0, 60) + "..." 
+                                                : podcast.Description)
+                                        </small>
+                                    </td>
+                                    <td class="align-middle">
+                                        <small>@podcast.CreatorID</small>
+                                    </td>
+                                    <td class="align-middle">
+                                        @podcast.CreatedDate.ToString("MMM dd, yyyy")
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-info">
+                                            @(episodeCounts?.ContainsKey(podcast.PodcastID) == true ? episodeCounts[podcast.PodcastID] : 0)
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="btn-group" role="group">
+                                            <a asp-controller="Podcast" asp-action="Details" asp-route-id="@podcast.PodcastID" 
+                                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-controller="Podcast" asp-action="Edit" asp-route-id="@podcast.PodcastID" 
+                                               class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal-@podcast.PodcastID"
+                                                    title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal-@podcast.PodcastID" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="background-color: var(--medium-gray); border: 2px solid var(--primary-red);">
+                                            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                                                <h5 class="modal-title text-light">
+                                                    <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>
+                                                    Confirm Delete
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body text-light">
+                                                <p>Are you sure you want to delete <strong>"@podcast.Title"</strong>?</p>
+                                                <p class="text-danger">
+                                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                                    This will also delete all @(episodeCounts?.ContainsKey(podcast.PodcastID) == true ? episodeCounts[podcast.PodcastID] : 0) episodes!
+                                                </p>
+                                            </div>
+                                            <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form asp-controller="Podcast" asp-action="Delete" asp-route-id="@podcast.PodcastID" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-trash me-1"></i>Delete Podcast
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-podcast text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mb-3">No Podcasts Yet</h4>
+                    <p class="text-muted">There are no podcasts in the system.</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,109 @@
+@model IEnumerable<GroupProject.Code.Models.Podcast>
+@{
+    ViewData["Title"] = "My Podcasts";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--primary-red);">
+                <i class="fas fa-podcast me-2"></i>My Podcasts
+            </h2>
+            <p class="text-muted mb-0">Manage your podcast collection</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create New Podcast
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var podcast in Model)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-lg">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 text-white">
+                                <i class="fas fa-microphone me-2"></i>@podcast.Title
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted">@podcast.Description</p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt me-1" style="color: var(--primary-red);"></i>
+                                Created: @podcast.CreatedDate.ToString("MMM dd, yyyy")
+                            </small>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a asp-action="Edit" asp-route-id="@podcast.PodcastID" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a asp-controller="Episode" asp-action="Index" asp-route-podcastId="@podcast.PodcastID" class="btn btn-outline-primary">
+                                    <i class="fas fa-list"></i> Episodes
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(@podcast.PodcastID, '@podcast.Title')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="card shadow-lg">
+                <div class="card-body py-5">
+                    <i class="fas fa-podcast text-muted mb-3" style="font-size: 4rem; color: var(--primary-red) !important;"></i>
+                    <h4 class="text-muted mb-3">No Podcasts Yet</h4>
+                    <p class="text-muted mb-4">Start your podcasting journey by creating your first podcast!</p>
+                    <a asp-action="Create" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Create Your First Podcast
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background-color: var(--medium-gray); border: 1px solid var(--primary-red);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--primary-red);">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-red);"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-light">
+                <p>Are you sure you want to delete the podcast "<span id="podcastTitle" style="color: var(--primary-red);"></span>"?</p>
+                <p class="text-danger small">
+                    <i class="fas fa-warning me-1"></i>This action cannot be undone and will delete all associated episodes.
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--primary-red);">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(podcastId, podcastTitle) {
+            document.getElementById('podcastTitle').textContent = podcastTitle;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + podcastId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}
